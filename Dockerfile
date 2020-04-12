@@ -66,7 +66,14 @@ RUN ldconfig
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt install -y tzdata python3-tk
 # Verify installations
-RUN export PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages \
+ENV VTK_DIR=/usr/local/lib/python${PYTHON_VERSION}/site-packages
+RUN export PYTHONPATH=$VTK_DIR \
     && python -c "import tkinter" \
     && python -c "import vtk" \
     && python -c "from vtk.tk.vtkTkRenderWindowInteractor import vtkTkRenderWindowInteractor"
+# Install setuptools & wheel
+RUN python -m pip install --user --upgrade setuptools wheel
+COPY setup.py $VTK_DIR/setup.py
+RUN cd $VTK_DIR \
+    && python setup.py sdist bdist_wheel \
+    && cp -r -v dist /
