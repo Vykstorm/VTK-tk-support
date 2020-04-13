@@ -8,4 +8,4 @@ docker build . -t $DOCKER_IMAGE_NAME \
 && docker cp $DOCKER_CONTAINER:/dist/ . \
 && docker rm $DOCKER_CONTAINER \
 && echo "Succesfully created wheels for vtk! ( checkout dist directory )" \
-&& ls | grep *.whl \
+&& ls | grep *.whl

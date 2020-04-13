@@ -82,5 +82,6 @@ RUN export PYTHONPATH=$VTK_DIR \
 RUN python -m pip install --user --upgrade setuptools wheel
 # Build wheels with setup script
 RUN cd /VTK-build \
+    && printf "from os.path import dirname, join\nimport sys\nsys.path.append(join(dirname(__file__), 'vtkmodules'))\n\n" >> vtk.py \
     && python setup.py bdist_wheel bdist_egg \
     && cp -r -v dist /
