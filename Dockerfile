@@ -39,7 +39,15 @@ RUN cd CMake \
 # Get VTK source code
 RUN git clone https://gitlab.kitware.com/vtk/vtk.git VTK -b release
 # Dependencies for VTK
-RUN apt install -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt install -y \
+        libglu1-mesa-dev \
+        freeglut3-dev    \
+        mesa-common-dev  \
+        tzdata           \
+        tcl-dev          \
+        tk-dev          \
+        python3-tk
 # Configure VTK
 RUN mkdir VTK-build \
     && cd VTK-build \
@@ -56,17 +64,14 @@ RUN mkdir VTK-build \
          -DPYTHON_INCLUDE_DIR:PATH=/usr/include/python${PYTHON_VERSION}  \
          -DPYTHON_LIBRARY:PATH=/usr/lib/python${PYTHON_VERSION}/config-${PYTHON_VERSION}m-x86_64-linux-gnu/libpython${PYTHON_VERSION}.so \
          -DVTK_WHEEL_BUILD=ON                                            \
-         # tk options
-         VTK_USE_TK=ON \
-         /VTK/
+         -DVTK_USE_TK=ON                                                 \
+         /VTK/ || \
+         cat ./CMakeFiles/CMakeError.log | grep VTK_USE_TK
 # Compile VTK
 RUN cd VTK-build \
     && make -j 4 \
     && make install
 RUN ldconfig
-# Install tkinter
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt install -y tzdata python3-tk
 # Verify installations
 ENV VTK_DIR=/usr/local
 RUN export PYTHONPATH=$VTK_DIR \
@@ -77,5 +82,5 @@ RUN export PYTHONPATH=$VTK_DIR \
 RUN python -m pip install --user --upgrade setuptools wheel
 # Build wheels with setup script
 RUN cd /VTK-build \
-    && python setup.py bdist_wheel \
+    && python setup.py bdist_wheel bdist_egg \
     && cp -r -v dist /
