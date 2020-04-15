@@ -80,8 +80,9 @@ RUN export PYTHONPATH=$VTK_DIR \
     && python -c "from vtk.tk.vtkTkRenderWindowInteractor import vtkTkRenderWindowInteractor"
 # Install setuptools & wheel
 RUN python -m pip install --user --upgrade setuptools wheel
+COPY parse.py /VTK-build/parse.py
 # Build wheels with setup script
 RUN cd /VTK-build \
-    && printf "from os.path import dirname, join\nimport sys\nsys.path.append(join(dirname(__file__), 'vtkmodules'))\n\n" >> vtk.py \
+    && python parse.py \
     && python setup.py bdist_wheel bdist_egg \
     && cp -r -v dist /
